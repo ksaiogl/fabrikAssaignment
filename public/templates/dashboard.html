@@ -79,6 +79,11 @@ Detected Device Type:
 </div>
 
 <div ng-if="renderChangesHistory.length > 0">
+    <b>Currently rendering {{renderChangesHistory[0].clientRenderPercentage}}% on Client and {{renderChangesHistory[0].serverRenderPercentage}}%
+        on Server
+    </b>
+    <br>
+    <br>
     <table>
         <tr>
             <th>Temparature</th>
