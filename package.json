@@ -6,17 +6,17 @@
     "start": "node ./bin/www"
   },
   "dependencies": {
+    "async": "^2.6.0",
     "body-parser": "~1.18.2",
     "cookie-parser": "~1.4.3",
     "debug": "~2.6.9",
     "express": "~4.15.5",
-    "morgan": "~1.9.0",
-    "pug": "2.0.0-beta11",
-    "serve-favicon": "~2.4.5",
     "ioredis": "^2.3.0",
     "log4js": "^0.6.29",
     "mongodb": "~2.0.52",
+    "morgan": "~1.9.0",
     "pug": "^2.0.0-rc.4",
+    "serve-favicon": "~2.4.5",
     "socket.io": "^2.0.4"
   }
 }
