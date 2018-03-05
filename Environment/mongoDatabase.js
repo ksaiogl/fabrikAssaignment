@@ -27,7 +27,7 @@ var dbConfig = {
             "type": "singleInstance",
             "user": "",
             "pwd": "",
-            "mongod": [],
+            "mongod": ["18.219.91.243:27017"],
             "database": "fabrikDB"
         },
     "loc":
@@ -84,5 +84,5 @@ exports.createMongoConn = function (callback) {
             exports.mongoDbConn = database;
             callback(false);
         }
-    });    
+    });
 }
