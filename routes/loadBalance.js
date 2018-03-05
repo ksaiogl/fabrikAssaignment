@@ -8,7 +8,7 @@ const TAG = " loadBalance.js -  ",
 // function to get Rendering % History
 exports.getRenderChangesHistory = (req, callback) => {
 
-  const ip = req.header('x-forwarded-for') || req.connection.remoteAddress;
+  var ip = req.header('x-forwarded-for') || req.connection.remoteAddress;
   if (ip.substr(0, 7) == "::ffff:") {
     ip = ip.substr(7)
   }
