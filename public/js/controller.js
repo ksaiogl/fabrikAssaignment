@@ -17,7 +17,7 @@ app
         $scope.temperatureUpdated = () => {
             console.log("temperature: ", $scope.temperature);
             var port = window.location.port;
-            var socket = io.connect('http://localhost:' + port + '/user', {});
+            var socket = io.connect(window.location.host + '/user', { transports: ['websocket'] });
             socket.emit('temperatureUpdated', { 'clientType': getClientType(), 'temperature': $scope.temperature })
             $scope.temperature = '';
 

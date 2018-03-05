@@ -19,15 +19,15 @@ app.use(bodyParser.urlencoded({ limit: '20mb', extended: true }));
 
 //CORS issue in the Browser.
 app.use(function (req, res, next) {
-  // res.header("Access-Control-Allow-Origin", req.headers.origin);
+  res.header("Access-Control-Allow-Origin", req.headers.origin);
   res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, Authorization");
   res.header("Access-Control-Allow-Methods", "POST, GET, PUT, OPTIONS");
   res.header("Access-Control-Allow-Credentials", true);
   next();
 });
 
-io.set('origins', 'http://localhost' + ':*');
-// io.set('transports', ['websocket']);
+// io.set('origins', 'http://localhost' + ':*');
+io.set('transports', ['websocket']);
 
 //Routing
 var loadBalance = require('./routes/index');
