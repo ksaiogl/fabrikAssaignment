@@ -9,6 +9,9 @@ const TAG = " loadBalance.js -  ",
 exports.getRenderChangesHistory = (req, callback) => {
 
   const ip = req.header('x-forwarded-for') || req.connection.remoteAddress;
+  if (ip.substr(0, 7) == "::ffff:") {
+    ip = ip.substr(7)
+  }
   const db = dbConfig.mongoDbConn;
   const logger = log.logger_loadBalance;
   logger.info(ip + TAG + "Inside getRenderChangesHistory function");
@@ -20,12 +23,12 @@ exports.getRenderChangesHistory = (req, callback) => {
         logger.info(TAG + "Succesfully fetched Render Changes History")
         callback(false, helper.outputResult(res.renderChanges));
       } else {
-        logger.info(TAG + "No Render Changes History found")        
+        logger.info(TAG + "No Render Changes History found")
         callback(false, helper.outputResult([]));
       }
     }).catch(err => {
-      console.log("err: ", err.stack ? err.stack : JSON.stringify(err));      
-      logger.error(TAG + "Error Computing Render Percentage,err: " + JSON.stringify(err))      
+      console.log("err: ", err.stack ? err.stack : JSON.stringify(err));
+      logger.error(TAG + "Error Computing Render Percentage,err: " + JSON.stringify(err))
       callback(true, helper.internalServerError())
     })
 } 
