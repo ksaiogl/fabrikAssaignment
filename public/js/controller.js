@@ -1,170 +1,39 @@
 
 var app = angular.module('myApp');
 app
-    .controller('dashboard', function ($scope, $routeParams, $http, $location) {
-        $scope.RenderChanges = [];
-        console.log("==========================");
-        $http.get('/loadBalance/getRenderChanges').then(function mySuccess(response) {
-            console.log("dashboard accessed successfully,res: " + JSON.stringify(response));
-            $scope.RenderChanges = response.data.message
-        }, function myError(response) {
-            console.log("error");
-            console.log("response: " + JSON.stringify(response));
-            $scope.myWelcome = response.statusText;
-            // $location.path("/customerLogin");
-        })
+    .controller('dashboardController', function ($scope, $routeParams, $http, $location) {
+        $scope.renderChangesHistory = [];
+        $scope.tableShown = false;
+        $scope.clientType = getClientType();
+        $scope.clientIP = userip;
+        $http.get('/loadBalance/getRenderChangesHistory')
+            .then((response) => {
+                $scope.renderChangesHistory = response.data.message
+            }).catch((response) => {
+                console.log("error");
+                console.log("response: " + JSON.stringify(response));
+                $scope.renderChangesHistory = []
+            })
 
         $scope.temperatureUpdated = () => {
-            console.log("temperature: ", $scope.temperature);
-            var port = window.location.port;
-            var socket = io.connect(window.location.host + '/user', { transports: ['websocket'] });
-            socket.emit('temperatureUpdated', { 'clientType': getClientType(), 'temperature': $scope.temperature })
+            var socket = io.connect(window.location.host + '/user', { transports: ['websocket'] });//conecting to socket server
+            socket.emit('temperatureUpdated', { 'clientType': $scope.clientType, 'temperature': $scope.temperature })
             $scope.temperature = '';
-
             socket.on('updatedRenderPercentage', (err, res) => {
-                console.log("***************8888");
                 if (!err) {
-                    console.log("pushed,res: ", res.message);
-                    $scope.RenderChanges.unshift(res.message);
+                    $scope.renderChangesHistory.unshift(res.message);
                     $scope.$apply();
                 } else {
                     console.log("err: ", err.stack);
+                    console.log("res: ", JSON.stringify(res));
                 }
             })
         }
-    })
-    .controller('customerDashboard', function ($scope, $routeParams, $http, $location, $rootScope) {
-        $http.post('/customer/api/v1.0/viewCustomer', {}).then(function mySuccess(response) {
-            // console.log("dashboard accessed successfully,res: " + JSON.stringify(response));
-            $scope.myAuctions = response.data
-            $rootScope.isCustomer = true;
-            $rootScope.isSupplier = false;
-        }, function myError(response) {
-            console.log("error");
-            console.log("response: " + JSON.stringify(response));
-            $scope.myWelcome = response.statusText;
-            $location.path("/customerLogin");
-        })
-
-        $scope.getAuctionDetails = (auctionId) => {
-            console.log("auctionId: ", auctionId);
-            $location.path('/auction/' + auctionId)
+        $scope.toggleTable = () => {
+            $scope.tableShown = !($scope.tableShown)
         }
     })
-    .controller('createAuction', function ($scope, $routeParams, $http, $location, $rootScope) {
 
-        $scope.auctionCreationProducts = {
-            'products': [
-                {
-                    "name": "p11",
-                    "pid": 1,
-                    "startPrice": ''
-                }
-            ]
-        }
-        $scope.createAuctionForm = {};
-        $scope.createAuction = (startPrice) => {
-            console.log("$scope.startPrice: " + $scope.startPrice);
-            console.log("startPrice: " + startPrice);
-            if (!$scope.startPrice) {
-                // window.alert('startPrice empty')
-            }
-            var auctionCreationProducts = {
-                'products': [
-                    {
-                        "name": "p11",
-                        "pid": 1,
-                        "startPrice": startPrice
-                    }
-                ],
-                "startTime": "2018-02-14T13:15:35.303Z",
-                "endTime": "2018-02-14T13:21:35.303Z"
-            }
-
-            $http.post('/customer/api/v1.0/createAuction', auctionCreationProducts).then(function mySuccess(response) {
-                console.log("createAuction successfully,res: " + JSON.stringify(response));
-                $scope.myAuctions = response.data
-                $location.path("/customerDashboard");
-            }, function myError(response) {
-                console.log("error");
-                console.log("response: " + JSON.stringify(response));
-                $scope.myWelcome = response.statusText;
-                $location.path("/customerLogin");
-            })
-        }
-
-
-        $scope.getAuctionDetails = (auctionId) => {
-            console.log("auctionId: ", auctionId);
-            $location.path('/auction/' + auctionId)
-        }
-    })
-    .controller('getAuction', function ($scope, $routeParams, $http, $location, $route, $timeout, $rootScope) {
-        console.log("inside getAuction ", $routeParams.auctionId);
-        var auctionId = parseInt($routeParams.auctionId);
-        var socket = io.connect('http://localhost:8083/Auction', { transports: ['websocket'] });
-        var roomName = 'AUC-' + auctionId
-        socket.emit('connectToRoom', roomName);
-        socket.emit('getAuction', { auctionId })
-        $scope.data1 = 'data1'
-        $scope.dataLoaded = false;
-        console.log($scope.dataLoaded);
-        console.log("$scope.isSupplier1 : ", $scope.isSupplier);
-
-        socket.on('currentAuction', data => {
-            $scope.data2 = 'data2'
-
-            console.log("currentAuction data", data);
-            // $timeout(function () {
-            $scope.auctionDetatils = data.message.auction;
-            $scope.bidDetatils = data.message.bids;
-            $scope.$apply();
-            // }, 0);
-
-            $scope.dataLoaded = true;
-            console.log($scope.dataLoaded);
-            console.log("$scope.auctionDetatils: ", JSON.stringify($scope.auctionDetatils));
-        })
-        $scope.submitBid = (productId, price) => {
-            console.log("inside submitBid: ", productId, price, auctionId);
-            socket.emit('submitBid', {
-                auctionId,
-                productId,
-                price,
-                roomName
-            })
-        }
-
-        socket.on('newBidReceived', data => {
-            console.log("newBidReceived: ", data);
-            console.log(JSON.stringify(data));
-            // $timeout(function () {
-            // $scope.auctionDetatils = data;
-            $scope.auctionDetatils = data.message.auction;
-            console.log("1:", $scope.bidDetatils.length);
-            console.log("new bid: ", JSON.stringify(data.message.newBid));
-            $scope.bidDetatils.unshift(data.message.newBid)
-            console.log("2:", $scope.bidDetatils.length);
-
-            $scope.bidPrice = '';
-            // $route.reload();
-            // }, 0);
-            $rootScope.$broadcast('newBidReceived');
-        })
-
-        $scope.$on('newBidReceived', function (event) {
-            // $scope.increment++;
-            console.log("broadcasted newBidReceived");
-            // $timeout(function () {
-            $scope.auctionDetatils = $scope.auctionDetatils
-            $scope.bidDetatils = $scope.bidDetatils
-            $scope.bidPrice = '';
-            // $route.reload();
-            $scope.$apply();
-            // }, 0);
-        });
-
-    })
 var getClientType = () => {
     var isMobile = window.mobilecheck = function () {
         var check = false;

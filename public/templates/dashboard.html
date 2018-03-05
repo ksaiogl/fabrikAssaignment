@@ -1,0 +1,99 @@
+<head>
+    <style>
+        table,
+        th,
+        td {
+            border: 1px solid black;
+            border-collapse: collapse;
+            text-align: center;
+        }
+    </style>
+</head>
+Detected Device Type:
+<b>{{clientType}}</b>
+<br>
+<br> Detected Client IP Address:
+<b>{{clientIP}}</b>
+<br>
+<br>
+<form>
+    Temperature:
+    <input type="number" placeholder="Enter Temparature" ng-model="temperature">
+    <button ng-disabled="!temperature" ng-click="temperatureUpdated()">Submit</button>
+</form>
+<br>
+<button ng-click="toggleTable()">
+    <span ng-if="tableShown">Hide Render Split % Reference Table</span>
+    <span ng-if="!tableShown">Show Render Split % Reference Table</span>
+</button>
+<br>
+<br>
+<div ng-if="tableShown">
+    <table>
+        <tr>
+            <th>Client Type</th>
+            <th>Temparature Range</th>
+            <th>Client-Side Render %</th>
+            <th>Server-Side Render %</th>
+        </tr>
+
+        <tr>
+            <td>Mobile</td>
+            <td> &lt; 30 </td>
+            <td>60</td>
+            <td>40</td>
+        </tr>
+        <tr>
+            <td>Mobile</td>
+            <td>&ge; 30 &le; 40 </td>
+            <td>40</td>
+            <td>60</td>
+        </tr>
+        <tr>
+            <td>Mobile</td>
+            <td>&gt; 40 </td>
+            <td>20</td>
+            <td>80</td>
+        </tr>
+        <tr>
+            <td>Desktop</td>
+            <td> &lt; 30 </td>
+            <td>70</td>
+            <td>30</td>
+        </tr>
+        <tr>
+            <td>Desktop</td>
+            <td>&ge; 30 &le; 40 </td>
+            <td>50</td>
+            <td>50</td>
+        </tr>
+        <tr>
+            <td>Desktop</td>
+            <td>&gt; 40 </td>
+            <td>30</td>
+            <td>70</td>
+        </tr>
+    </table>
+    <br>
+    <br>
+</div>
+
+<div ng-if="renderChangesHistory.length > 0">
+    <table>
+        <tr>
+            <th>Temparature</th>
+            <th>Date</th>
+            <th>Client-Side Render %</th>
+            <th>Server-Side Render %</th>
+        </tr>
+        <tr ng-repeat="change in renderChangesHistory">
+            <td>{{change.temperature}}</td>
+            <td>{{change.timestamp | date:'medium' }}</td>
+            <td>{{change.clientRenderPercentage}}</td>
+            <td>{{change.serverRenderPercentage}}</td>
+        </tr>
+    </table>
+</div>
+<div ng-if="renderChangesHistory.length == 0">
+    <b>Please Enter a Tempearture in above Form to View % Render Split Across Client And Server</b>
+</div>

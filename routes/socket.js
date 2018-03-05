@@ -1,37 +1,35 @@
 'use strict';
-const TAG = " loadBalance.js -  ",
+const TAG = " socket.js -  ",
+    _ = require('underscore'),
     log = require('../Environment/log4js.js'),
     dbConfig = require('../Environment/mongoDatabase.js'),
-    _ = require('underscore'),
-    config = require('./config');
+    config = require('./config'),
+    helper = require('./util');
 
+// function to compute render % based on tempearture
 exports.computeRenderPercentage = (input, callback) => {
-    const ip = input.ip;
     const db = dbConfig.mongoDbConn;
     const logger = log.logger_loadBalance;
-    logger.info(ip + TAG + "Inside computeRenderPercentage");
-    logger.info(ip + TAG + "Input body: " + JSON.stringify(input));
-    console.log(input);
-    if (input && input.ip && input.temperature && input.clientType) {
+    logger.info(TAG + "Inside computeRenderPercentage");
+    logger.info(TAG + "Input body: " + JSON.stringify(input));
+
+    if (input && input.clientIpAddress && typeof input.temperature == 'number' && input.clientType) {
 
         getRenderLoadBalancingPercentage(input)
             .then((renderChange) => { return updateRenderChangesToDB(input, renderChange) })
             .then(renderPercentageData => {
-                callback(false, outputResult(renderPercentageData))
+                logger.info(TAG + "Succesfully Computed Render Percentage")
+                callback(false, helper.outputResult(renderPercentageData))
             })
             .catch(err => {
-                console.log(err);
-                if ("http_code" in err && "message" in err) {
-                    return callback(true, err);
-                } else {
-                    logger.error(TAG + "Error Computing Render Percentage,err: " + err.stack)
-                    return callback(true, internalServerError());
-                }
+                console.log("err: ", err.stack ? err.stack : JSON.stringify(err));
+                logger.error(TAG + "Error Computing Render Percentage,err: " + JSON.stringify(err))
+                return callback(true, internalServerError());
             });
+
     } else {
-        console.log("111111");
         logger.error(TAG + "Bad or ill-formed request");
-        return callback(true, badFormat("Statements is mandatory and must be a non-empty array"));
+        return callback(true, helper.badFormat("clientIpAddress,temperature,clientType are mandatory"));
     }
 }
 
@@ -41,6 +39,7 @@ const getRenderLoadBalancingPercentage = (input) => {
         resolve(config.loadBalanceMappings[input.clientType][input.temperatureRange])
     })
 }
+
 const updateRenderChangesToDB = (input, renderChange) => {
 
     const db = dbConfig.mongoDbConn;
@@ -48,17 +47,20 @@ const updateRenderChangesToDB = (input, renderChange) => {
     return new Promise((resolve, reject) => {
         renderChange['temperature'] = input.temperature;
         renderChange['timestamp'] = new Date();
-        db.collection('renderChangesHistory').update({ 'ip': input.ip },
-            { $push: { 'renderChanges': { $each: [renderChange], $sort: { timestamp: -1 } } } }, { upsert: true })
+        db.collection('renderChangesHistory')
+            .update({ 'clientIpAddress': input.clientIpAddress },
+                { $push: { 'renderChanges': { $each: [renderChange], $sort: { timestamp: -1 } } } }, { upsert: true })
             .then(res => {
                 resolve(renderChange)
             })
             .catch(err => {
                 console.log(err.stack);
-                reject(internalServerError())
+                reject(helper.internalServerError())
             })
     })
 }
+
+//helper functions
 
 const getTempeartureRange = (temperature) => {
     if (temperature < 30) {
@@ -69,45 +71,3 @@ const getTempeartureRange = (temperature) => {
         return 'greaterThan40';
     }
 }
-
-
-const badFormat = (errors) => {
-    const result = {
-        "http_code": "400",
-        "message": "Bad or ill-formed request..",
-        "errors": errors
-    };
-    return result;
-};
-
-const inputDontMatch = () => {
-    const result = {
-        "http_code": "404",
-        "message": "The inputs does not match with our records..Please retry.."
-    };
-    return result;
-};
-
-const internalServerError = () => {
-    const result = {
-        "http_code": "500",
-        "message": "Internal Server Error..Please retry.."
-    };
-    return result;
-};
-
-const outputResult = (result) => {
-    const resJson = {
-        "http_code": "200",
-        "message": result
-    };
-    return resJson;
-};
-
-const makeResult = (statusCode, message) => {
-    const result = {
-        "http_code": statusCode,
-        "message": message
-    };
-    return result;
-};

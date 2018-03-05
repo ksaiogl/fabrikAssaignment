@@ -3,8 +3,8 @@ const express = require('express'),
   loadBalance = require('./loadBalance');
 
 /* GET Render Changes. */
-router.get('/getRenderChanges', (req, res) => {
-  loadBalance.getRenderChanges(req, (err, regres) => {
+router.get('/getRenderChangesHistory', (req, res) => {
+  loadBalance.getRenderChangesHistory(req, (err, regres) => {
     res.statusCode = regres.http_code;
     res.json(regres);
   })

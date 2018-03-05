@@ -2,6 +2,7 @@
 <html>
 
 <head>
+    <title>Load Balancing App</title>
     <meta http-equiv="Content-Security-Policy" content="default-src *; style-src 'self' http://* 'unsafe-inline'; script-src 'self' http://* 'unsafe-inline' 'unsafe-eval'"
     />
     <base href="/">
@@ -10,11 +11,13 @@
 <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.4/angular.js"></script>
 <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.4.4/angular-cookies.js" type="text/javascript"></script>
 <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.4/angular-route.js"></script>
+<script src="https://l2.io/ip.js?var=userip"></script>
 <script src="/socket.io/socket.io.js"></script>
 <script src="js/app.js"></script>
 <script src="js/controller.js"></script>
 
 <body ng-app="myApp">
+    <h1>Load Balancing App</h1>
     <div ng-view></div>
 </body>
 
