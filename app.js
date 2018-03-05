@@ -62,6 +62,9 @@ dbConfig.createMongoConn(function (error) {
         clientSocket.on('connection', socket => {
 
           var clientIpAddress = socket.handshake.address;
+          if (clientIpAddress.substr(0, 7) == "::ffff:") {
+            clientIpAddress = clientIpAddress.substr(7)
+          }
           console.log('new connection established on User Socket from ' + clientIpAddress);
 
           socket.on('temperatureUpdated', (data) => {
