@@ -27,7 +27,7 @@ app.use(function (req, res, next) {
 });
 
 io.set('origins', 'http://localhost' + ':*');
-io.set('transports', ['websocket']);
+// io.set('transports', ['websocket']);
 
 //Routing
 var loadBalance = require('./routes/index');
